@@ -1,0 +1,60 @@
+x-local-image:
+  &local-image
+  image: pixbyt:dev
+  build:
+    context: .
+    args:
+      DOCKER_BUILDKIT: 1
+
+x-remote-image:
+  &remote-image
+  image: ghcr.io/<username>/pixbyt:main # TODO: replace with your own image
+
+services:
+  pixbyt:
+    <<: *local-image
+    # <<: *remote-image # TODO: use this instead of the line above to use a remote image
+    platform: linux/amd64
+    container_name: pixbyt
+    environment:
+      MELTANO_DATABASE_URI: postgresql://postgres:postgres@localhost:5433/meltano
+      AIRFLOW_DATABASE_SQL_ALCHEMY_CONN: postgresql://postgres:postgres@localhost:5434/airflow
+    env_file: .env
+    volumes:
+    - ./logs:/project/logs # TODO: rotate logs
+    - ./output:/project/output
+    network_mode: host
+    depends_on:
+    - meltano-db
+    - airflow-db
+    restart: unless-stopped
+
+  meltano-db:
+    image: postgres:14
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: meltano
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+    - meltano_postgresql_data:/var/lib/postgresql/data
+    ports:
+    - 5433:5432
+    restart: unless-stopped
+
+  airflow-db:
+    image: postgres:14
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: airflow
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+    - airflow_postgresql_data:/var/lib/postgresql/data
+    ports:
+    - 5434:5432
+    restart: unless-stopped
+
+volumes:
+  meltano_postgresql_data:
+    driver: local
+  airflow_postgresql_data:
+    driver: local

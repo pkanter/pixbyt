@@ -1,0 +1,54 @@
+plugins:
+  extractors:
+  - name: tap-pixlet
+    namespace: tap_pixlet
+    pip_url: git+https://github.com/DouweM/tap-pixlet.git
+    settings:
+    - name: path
+    - name: installation_id
+    - name: background
+      kind: boolean
+    - name: magnification
+      kind: integer
+    - name: app_config
+      kind: object
+      value: {}
+
+  loaders:
+  - name: target-tidbyt
+    namespace: target_tidbyt
+    pip_url: git+https://github.com/DouweM/target-tidbyt.git
+    settings:
+    - name: device_id
+      value: $TIDBYT_DEVICE_ID
+    - name: key
+      kind: password
+      value: $TIDBYT_KEY
+
+    - name: devices_path
+      value: $MELTANO_PROJECT_ROOT/devices.yml
+    - name: device_names
+      kind: array
+      value: $TIDBYT_DEVICE_NAMES
+
+  - name: target-webp
+    namespace: target_webp
+    pip_url: git+https://github.com/DouweM/target-webp.git
+
+  utilities:
+  - name: airflow
+    variant: apache
+    pip_url: git+https://github.com/meltano/airflow-ext.git@main apache-airflow==2.8.1 psycopg2-binary
+      --constraint https://raw.githubusercontent.com/apache/airflow/constraints-2.8.1/constraints-no-providers-${MELTANO__PYTHON_VERSION}.txt
+    config:
+      core:
+        dags_folder: $MELTANO_PROJECT_ROOT/plugins/airflow/dags
+        plugins_folder: $MELTANO_PROJECT_ROOT/plugins/airflow/plugins
+      logging:
+        base_log_folder: $MELTANO_PROJECT_ROOT/logs
+        dag_processor_manager_log_location: $MELTANO_PROJECT_ROOT/logs/schedule_manager.log
+      scheduler:
+        child_process_log_directory: $MELTANO_PROJECT_ROOT/logs/scheduler
+      extension:
+        airflow_home: $MELTANO_PROJECT_ROOT/plugins/airflow
+        airflow_config: $MELTANO_PROJECT_ROOT/plugins/airflow/airflow.cfg
