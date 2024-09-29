@@ -8,12 +8,12 @@ x-local-image:
 
 x-remote-image:
   &remote-image
-  image: ghcr.io/<username>/pixbyt:main # TODO: replace with your own image
+  image: ghcr.io/pkanter/pixbyt:main # TODO: replace with your own image
 
 services:
   pixbyt:
-    <<: *local-image
-    # <<: *remote-image # TODO: use this instead of the line above to use a remote image
+    # <<: *local-image
+    <<: *remote-image # TODO: use this instead of the line above to use a remote image
     platform: linux/amd64
     container_name: pixbyt
     environment:
